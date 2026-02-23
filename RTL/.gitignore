@@ -4,4 +4,6 @@ tmp/
 *.err
 *.jed
 *.prj
+*.rpt
+*.tim
 local.mk
