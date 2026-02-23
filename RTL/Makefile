@@ -1,13 +1,12 @@
 PROJECT=A4092
 PART=XC95144XL-10-TQ144
 WORKDIR=tmp
-SERIAL=0
-DEFINES=makedefines SERIAL=32'h${SERIAL}
+DEFINES=
 
 CABLE=usb21
 
 #CPLDFITFLAGS=-loc on -slew slow -init low -terminate keeper  -unused ground -power std  -optimize speed -keepio
-CPLDFITFLAGS=-loc on -slew slow -init low -terminate keeper  -unused float -power std  -optimize speed -keepio
+CPLDFITFLAGS=-loc on -slew fast -init low -terminate keeper  -unused float -power std  -optimize speed -keepio -exhaust -pterms 90
 
 .PHONY:	all clean timing
 
@@ -22,12 +21,12 @@ endif
 
 all:	$(PROJECT).jed timing
 
-$(PROJECT).prj: *.v
-	-$(shell rm -f $@)
-	-$(foreach source,$^,$(shell echo verilog work $(source) >> $@))
+$(PROJECT).prj: *.v *.vh
+	@rm -f $@
+	@for src in $(filter %.v,$^); do echo "verilog work $$src" >> $@; done
 
-$(WORKDIR)/$(PROJECT).ngc:	*.v $(PROJECT).prj
-	-@mkdir $(WORKDIR)
+$(WORKDIR)/$(PROJECT).ngc:	*.v *.vh $(PROJECT).prj
+	@mkdir -p $(WORKDIR)
 	@sed -r "s#^(-ofn).*#\1 ..\/$@#g;s#^(-ifn).*#\1 ../$(PROJECT).prj#g;s#^(-define).*#\1 {$(DEFINES)}#g" template.xst > $@.xst
 	cd $(WORKDIR) && xst -ifn ../$@.xst -ofn $(PROJECT)-xst.log
 
@@ -53,14 +52,8 @@ timing:	$(PROJECT).tim
 
 clean:
 	-rm -rvf tmp
-	-rm *.jed
-	-rm *.prj
+	-rm -f *.jed
+	-rm -f *.prj
 
 flash:	$(PROJECT).jed
-	@echo "setMode -bs\n"\
-	"setCable -p $(CABLE)\n"\
-	"identify\n"\
-	"assignfile -p 1 -file $<\n"\
-	"erase -p 1\n"\
-	"program -p 1\n"\
-	"verify -p 1" | LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so impact -batch
+	@printf "setMode -bs\nsetCable -p $(CABLE)\nidentify\nassignfile -p 1 -file $<\nerase -p 1\nprogram -p 1\nverify -p 1\n" | LD_PRELOAD=/opt/Xilinx/usb-driver/libusb-driver.so impact -batch

@@ -11,8 +11,8 @@ run
 -opt_level 2
 -iuc NO
 -keep_hierarchy Yes
--netlist_hierarchy As_Optimized
--rtlview No
+-netlist_hierarchy Rebuilt
+-rtlview Yes
 -hierarchy_separator /
 -bus_delimiter <>
 -case Maintain
