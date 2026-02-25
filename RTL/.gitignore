@@ -1,5 +1,5 @@
 _xmsgs
-tmp/
+tmp-*/
 *.log
 *.err
 *.jed
