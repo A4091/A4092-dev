@@ -28,19 +28,24 @@ NET "A<19>"       LOC = "P27";
 NET "A<20>"       LOC = "P28";
 # P29 - GND
 NET "CLK_50M"     LOC = "P30";
+NET "CLK_50M"     BUFG = "CLK";
 NET "CLK_50M" TNM_NET = "clk";
 TIMESPEC "TS_clk" = PERIOD "clk" 20 ns HIGH 50%;
 NET "SCSI_AS_n"   LOC = "P31";
 NET "A4092SCSI_DS_n"   LOC = "P32";
 NET "SPI_CLK"     LOC = "P33";
+NET "SPI_CLK"     SLEW = "SLOW";
 NET "SPI_MOSI"    LOC = "P34";
+NET "SPI_MOSI"    SLEW = "SLOW";
 NET "SPI_MISO"    LOC = "P35";
 # P36 - GND
 # P37 - VCCIO
 NET "C7M"         LOC = "P38";
+NET "C7M"         BUFG = "CLK";
 NET "C7M"         TNM_NET = "C7M";
 TIMESPEC "TS_C7M" = PERIOD "C7M" 139.68 ns HIGH 50%;
 NET "SPI_CS_n"    LOC = "P39";
+NET "SPI_CS_n"    SLEW = "SLOW";
 NET "DOE"         LOC = "P40";
 NET "READ"        LOC = "P41";
 # P42 - VCCINT

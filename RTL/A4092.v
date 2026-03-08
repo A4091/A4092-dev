@@ -204,7 +204,8 @@ module A4092 (
     assign DIP_EXT_TERM = 1'bZ;
     assign SID_n = !sid_read;
 `else
-    assign DIP_EXT_TERM = siddata_out[6];
+    //According to the DS21x07 datasheet, /PD should be 0V or high impedance.
+    assign DIP_EXT_TERM = (siddata_out[6]) ? 1'bZ : 0;
     assign SID_n = 1;
 `endif
 

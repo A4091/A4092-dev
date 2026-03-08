@@ -23,7 +23,6 @@ module dmamaster(
     input IORST_n,
     input SLAVE_n,
     input mybus,
-    input MASTER_n,
     input SCSI_AS_n,
     output reg SCSI_STERM_n = 1,
     input READ,

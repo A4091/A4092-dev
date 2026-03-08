@@ -11,7 +11,6 @@ module scsiaccess (
     input scsi_cycle,
     input mybus,
     output reg SCSI_SREG_n = 1,
-    output reg scsi_sterm = 0,
     output reg scsi_as_sig = 0,
     output reg scsi_ds_sig = 0,
     input SLACK_n,
