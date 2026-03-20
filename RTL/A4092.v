@@ -184,15 +184,12 @@ module A4092 (
     // ########################################
     // Zorro signal assignment
     assign CFGOUT_n = (!SENSEZ3 || cfgout) ? 1'bZ : 1;
-    assign SLAVE_n = slave_sig ? 0 : 1'bZ;
+    assign SLAVE_n = (slave_sig || quickint_slave) ? 0 : 1'bZ;
     assign DTACK_n = (dtack_sig && !Z_FCS_n) ? 0 : 1'bZ;
     assign CINH_n = slave_sig ? 0 : 1'bZ;
     assign MTACK_n = slave_sig ? 1 : 1'bZ;
     assign INT2_n = int_sig ? 0 : 1'bZ;
-
-    assign MTCR_n = mybus ? 1 : 1'bZ;
     assign Z_FCS_n = mybus ? !efcs : 1'bZ;
-    assign DOE = mybus ? dma_doe : 1'bZ;
 
     // ########################################
     // Card internal Signal assignment
@@ -209,17 +206,23 @@ module A4092 (
     assign SID_n = 1;
 `endif
 
-    assign SCSI_AS_n = (mybus) ? 1'bz : !scsi_as_sig;
+    assign SCSI_AS_n = MASTER_n ? !scsi_as_sig : 1'bz;
 `ifdef A4770
     assign A4092SCSI_DS_n = 1'bz;
-    assign A4770SCSI_DS_n = (mybus) ? 1'bz : !scsi_ds_sig;
+    assign A4770SCSI_DS_n = MASTER_n ? !scsi_ds_sig : 1'bz;
 `else
-    assign A4092SCSI_DS_n = (mybus) ? 1'bz : !scsi_ds_sig;
+    assign A4092SCSI_DS_n = MASTER_n ? !scsi_ds_sig : 1'bz;
     assign A4770SCSI_DS_n = 1'bz;
 `endif
 
+    // never request Multi Transfer cycle
+    assign MTCR_n = BMASTER ? 1 : 1'bZ;
+
+    // DOE goes out to internam BUS
+    assign DOE = BMASTER ? dma_doe : 1'bZ;
+
     // DS_n is output to cardinternal bus when MASTER_n is active (low)
-    assign DS_n = MASTER_n ? 4'bZZZZ : ds_n_sig;
+    assign DS_n = BMASTER ? ds_n_sig : 4'bZZZZ;
 
     // SIZ and AL are output to NCR when MASTER_n is inactive (high)
     assign SIZ = MASTER_n ? siz_sig : 2'bZZ;
@@ -254,7 +257,7 @@ module A4092 (
     assign dtack_sig = config_dtack || rom_dtack || scsi_dtack || int_dtack || sid_dtack;
 
     // slave logic
-    assign slave_sig = config_cycle || card_cycle || quickint_slave;
+    assign slave_sig = config_cycle || card_cycle;
 
     // Module Instantiations
     buffercontrol BUFFER_CONTROL (
