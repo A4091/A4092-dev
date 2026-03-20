@@ -6,8 +6,7 @@
 module buffercontrol (
     input MASTER_n,
     input Z_FCS_n,
-    input slavecycle,
-    input mastercycle,
+    input mybus,
     input slave,
     input READ,
     input DOE,
@@ -27,12 +26,20 @@ module buffercontrol (
     output [1:0] siz
 );
 
+    wire slavecycle;
+    wire mastercycle;
+
     // FCS is Latch Enable of U1 and U4
     assign FCS = !Z_FCS_n;
 
     // BMASTER is simply a inverted MASTER_n
     // MASTER_n and BMASTER used for direction control of Addressbuffer
     assign BMASTER = !MASTER_n;
+
+    // Slavecycle when Card is not Zorro Master and no DMA from NCR pending
+    assign slavecycle = !mybus && MASTER_n;
+    // Mastercycle when Card is Zorro Master and DMA active
+    assign mastercycle = mybus && !MASTER_n;
 
     // The address buffer controls.  I want addresses going in unless the SCSI
     // device has been granted the A4091 bus.  If so, addresses only go out when

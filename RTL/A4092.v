@@ -117,8 +117,6 @@ module A4092 (
     localparam romvec = 16'd512;        // Romvector for Autoboot ROM
 
     wire slave_sig;
-    wire slavecycle;
-    wire mastercycle;
     wire dtack_sig;
 
     // Buffercontrol
@@ -256,17 +254,11 @@ module A4092 (
     // slave logic
     assign slave_sig = config_cycle || card_cycle || quickint_slave;
 
-    // Slavecycle when Card is not Zorro Master and no DMA from NCR pending
-    assign slavecycle = !mybus && MASTER_n;
-    // Mastercycle when Card is Zorro Master and DMA active
-    assign mastercycle = mybus && !MASTER_n;
-
     // Module Instantiations
     buffercontrol BUFFER_CONTROL (
         .MASTER_n (MASTER_n),
        	.Z_FCS_n (Z_FCS_n),
-        .slavecycle (slavecycle),
-       	.mastercycle (mastercycle),
+        .mybus (mybus),
        	.slave (slave_sig),
        	.READ (READ),
         .DOE (DOE),
