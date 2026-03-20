@@ -31,7 +31,7 @@ module dmamaster(
     input [1:0] ADDRL,
     input [1:0] SIZ,
     output reg efcs = 0,
-    output dma_aboel,
+    output reg dma_aboel = 0,
     output reg dma_aboeh = 0,
     output reg dma_doe = 0,
     output reg [3:0] ds_n = 4'b1111
@@ -56,16 +56,15 @@ module dmamaster(
         end
     end
 
-    // always drive dma_aboel when ZIII Master
-    assign dma_aboel = mybus;
-
     // Start cycle if bus if free, and SCSI_AS_n active
     always @ (negedge cycz3, posedge bclk) begin
         if (!cycz3) begin
             dma_aboeh <= 0;
+            dma_aboel <= 0;
         end else begin
             if (busfree) begin
                 dma_aboeh <= 1;
+                dma_aboel <= 1;
             end else if (efcs) begin
                 dma_aboeh <= 0;
             end
