@@ -31,6 +31,7 @@ module interrupthandling(
     output reg vector_read = 0,
     output reg dtack = 0,
     input SINT_n,                   // real interrupt from NCR
+    input fakeint,                  // fake interrupt from dmaarbiter, needed for Buster09 compatibility
     output int_sig,                 // interrupt out tu ZIII Bus
     input FCS_n,
     input SLAVE_n,
@@ -57,7 +58,7 @@ module interrupthandling(
         if (!IORST_n) begin
             int_sync = 0;
         end else if (FCS_n) begin
-            int_sync = !SINT_n;
+            int_sync = !SINT_n || fakeint;
         end
     end
 

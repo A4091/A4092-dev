@@ -26,6 +26,8 @@
 `define USE_SPIROM          // undef for Parallel ROM define for SPI ROM
 `undef USE_DIP_SWITCH       // undef to use Virtual Register, define to use Hardware Switch
 // ###########################################################
+`undef BUSTER09             // define for Buste09 Compatibility (HIGHLY EXPERIMENTAL!)
+// ###########################################################
 
 `ifdef A4770
     `define USE_SPIROM
@@ -175,6 +177,7 @@ module A4092 (
     wire dma_aboeh;
     wire dma_doe;
     wire [3:0] ds_n_sig;
+    wire fakeint;                           // used for Buster09 compatibility
 
     // generate 25MHz BCLK
     always @(posedge CLK_50M) begin
@@ -320,7 +323,14 @@ module A4092 (
         .DTACK_n (DTACK_n),
         .mybus (mybus),
         .SBG_n (SBG_n),
-        .EBR_n (BRn)
+        .EBR_n (BRn),
+`ifdef BUSTER09
+        .buster09 (1'b1),
+`else
+        .buster09 (1'b0),
+`endif
+        .quickint_cycle (quickint_cycle),
+        .fakeint (fakeint)
 	);
 
 	dmamaster DMA_MASTER (
@@ -406,6 +416,7 @@ module A4092 (
         .vector_read (intvector_read),
         .dtack (int_dtack),
         .SINT_n (SINT_n),
+        .fakeint (fakeint),
         .int_sig (int_sig),
         .FCS_n (Z_FCS_n),
         .SLAVE_n (SLAVE_n),
