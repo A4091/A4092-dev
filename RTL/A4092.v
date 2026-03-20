@@ -113,8 +113,10 @@ module A4092 (
     localparam mfg_id = 16'd514;        // Commodore (West Chester)
     localparam prod_id = 8'd84;         // A 4091 SCSI
 `endif
-    localparam serial = 32'd14;         // Serialnumber
-    localparam romvec = 16'd512;        // Romvector for Autoboot ROM
+    localparam PLD_VER_MAJ = 8'd1;      // CPLD Version
+    localparam PLD_VER_MIN = 8'd3;      // CPLD Revision
+    localparam PLD_VER_PATCH = 16'd25;  // CPLD Patch Level
+    localparam romvec = 16'd512;        // Romvector for Autoboot ROM 0 = Autoboot disabled
 
     wire slave_sig;
     wire dtack_sig;
@@ -299,7 +301,7 @@ module A4092 (
        	.card_cycle (card_cycle),
         .mfg_id (mfg_id),
         .prod_id (prod_id),
-        .serial(serial),
+        .serial({PLD_VER_MAJ, PLD_VER_MIN, PLD_VER_PATCH}),
         .romvec (romvec)
     );
 
