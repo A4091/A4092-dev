@@ -40,13 +40,13 @@ module autoconfig (
     // set card or config Cycle signal at addressmatch, hold until cycle ends
     always @(posedge cycle_end, posedge clk) begin
         if (cycle_end) begin
-            card_cycle = 0;
-            config_cycle = 0;
+            card_cycle <= 0;
+            config_cycle <= 0;
         end else begin
             if (configured_sig && addrh == card_addr) begin
-                card_cycle = 1;
+                card_cycle <= 1;
             end else if (!configured_sig && !shutup_sig && addrh == 8'hFF) begin
-                config_cycle = 1;
+                config_cycle <= 1;
             end
         end
     end
