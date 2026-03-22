@@ -19,6 +19,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
 module dmamaster(
+    input sclk,
     input bclk,
     input IORST_n,
     input SLAVE_n,
@@ -30,80 +31,68 @@ module dmamaster(
     input DTACK_n,
     input [1:0] ADDRL,
     input [1:0] SIZ,
-    output reg efcs = 0,
-    output reg dma_aboel = 0,
-    output reg dma_aboeh = 0,
-    output reg dma_doe = 0,
-    output reg [3:0] ds_n = 4'b1111
+    (* LOC = "FB7" *) output reg efcs = 0,
+    (* LOC = "FB8" *) output dma_aboel,
+    (* LOC = "FB8" *) output reg dma_aboeh = 0,
+    (* LOC = "FB3" *) output reg dma_doe = 0,
+    (* LOC = "FB7" *) output reg [3:0] ds_n = 4'b1111
 );
 
-    reg dma_ds = 0;
     wire busfree;
     wire cycz3;
 
-    assign busfree = Z_FCS_n && DTACK_n && SLAVE_n && &ds_n && IORST_n;
-    assign cycz3 = DTACK_n && mybus && !SCSI_AS_n && IORST_n;
+    assign busfree = Z_FCS_n && DTACK_n && SLAVE_n && &ds_n;
+    assign cycz3 = SCSI_STERM_n && mybus && !SCSI_AS_n && IORST_n; //use SCSI_STERM_n to wait until actual cycle ends...
 
-    // ds_n based on A1,A0 and SIZ from NCR
-    always @ (*) begin
-        if (dma_ds) begin
-            ds_n[0] = !(READ || (ADDRL[0] && SIZ == 2'b11) || SIZ == 2'b00 || ADDRL == 2'b11 || (ADDRL[1] && SIZ[1]));
-            ds_n[1] = !(READ || (!ADDRL[1] && SIZ == 2'b00) || (!ADDRL[1] && SIZ == 2'b11) || (ADDRL == 2'b01 && !SIZ[0]) || ADDRL == 2'b10);
-            ds_n[2] = !(READ || (!ADDRL[1] && !SIZ[0]) || ADDRL == 2'b01 || (!ADDRL[1] && SIZ[1]));
-            ds_n[3] = !(READ || ADDRL == 2'b00);
-        end else begin
-            ds_n = 4'b1111;
-        end
-    end
+     // always drive dma_aboel when ZIII Master
+    assign dma_aboel = mybus;
 
     // Start cycle if bus if free, and SCSI_AS_n active
-    always @ (negedge cycz3, posedge bclk) begin
+    always @ (negedge cycz3, posedge sclk) begin
         if (!cycz3) begin
             dma_aboeh <= 0;
-            dma_aboel <= 0;
         end else begin
             if (busfree) begin
                 dma_aboeh <= 1;
-                dma_aboel <= 1;
-            end else if (efcs) begin
+            end else begin
                 dma_aboeh <= 0;
             end
         end
     end
 
-    // set efcs active 1/2 bclk after ABOEH
-    always @ (negedge IORST_n, negedge bclk) begin
-        if (!IORST_n) begin
+    // set efcs active 1 sclk after ABOEH (20ns) (Tafs >= 15ns)
+    always @ (negedge cycz3, posedge sclk) begin
+        if (!cycz3) begin
             efcs <= 0;
         end else begin
-            if (dma_aboeh) begin
+            if (dma_aboeh) begin            // LATCH!
                 efcs <= 1;
-            end else if (!cycz3) begin
-                efcs <= 0;
             end
         end
     end
 
-    // set doe active 1 bclk after efcs
-    always @ (negedge efcs, negedge bclk) begin
-        if (!efcs) begin
+    // set doe active 1/2 sclk after dma_aboeh inactive (10ns)
+    always @ (negedge cycz3, negedge sclk) begin
+        if (!cycz3) begin
             dma_doe <= 0;
         end else begin
-            dma_doe <= 0;
-            if (efcs) begin
+            if (!dma_aboeh) begin
                 dma_doe <= 1;
             end
         end
     end
 
-    // set ds active 1/2 bclk after doe
-    always @ (negedge efcs, posedge bclk) begin
-        if (!efcs) begin
-            dma_ds <= 0;
+    // set ds active 1/2 sclk after doe (10ns) (tds 10...30ns)
+    always @ (negedge cycz3, posedge sclk) begin
+        if (!cycz3) begin
+            ds_n <= 4'b1111;
         end else begin
-            dma_ds <= 0;
             if (dma_doe) begin
-                dma_ds <= 1;
+                // ds_n based on A1,A0 and SIZ from NCR
+                ds_n[0] <= !(READ || (ADDRL[0] && SIZ == 2'b11) || SIZ == 2'b00 || ADDRL == 2'b11 || (ADDRL[1] && SIZ[1]));
+                ds_n[1] <= !(READ || (!ADDRL[1] && SIZ == 2'b00) || (!ADDRL[1] && SIZ == 2'b11) || (ADDRL == 2'b01 && !SIZ[0]) || ADDRL == 2'b10);
+                ds_n[2] <= !(READ || (!ADDRL[1] && !SIZ[0]) || ADDRL == 2'b01 || (!ADDRL[1] && SIZ[1]));
+                ds_n[3] <= !(READ || ADDRL == 2'b00);
             end
         end
     end
@@ -116,9 +105,10 @@ module dmamaster(
         if (!IORST_n) begin
             SCSI_STERM_n <= 1;
         end else begin
-            SCSI_STERM_n <= 1;
             if (!SCSI_AS_n && !Z_FCS_n && !DTACK_n) begin
                 SCSI_STERM_n <= 0;
+            end else begin
+                SCSI_STERM_n <= 1;
             end
         end
     end
