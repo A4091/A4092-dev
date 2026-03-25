@@ -5,8 +5,10 @@ CABLE=usb21
 #CPLDFITFLAGS=-loc on -slew slow -init low -terminate keeper  -unused ground -power std  -optimize speed -keepio
 CPLDFITFLAGS=-loc on -slew fast -init low -terminate keeper  -unused float -power std  -optimize speed -keepio -exhaust -pterms 90
 
-# Variants: A4092 (default), A4092c, A4770
-VARIANTS = A4092 A4092c A4770
+# Variants: A4092 (SPI ROM, no DIP switch), A4770
+BASE_VARIANTS = A4092 A4770
+BUSTER9_VARIANTS = $(addsuffix _Buster9,$(BASE_VARIANTS))
+VARIANTS = $(BASE_VARIANTS) $(BUSTER9_VARIANTS)
 
 # ---- Top-level targets (no VARIANT set) ----
 ifndef VARIANT
@@ -27,27 +29,23 @@ clean:
 	-rm -f *.prj
 
 flash:
-	@echo "Usage: make flash VARIANT=<A4092|A4092c|A4770>"
+	@echo "Usage: make flash VARIANT=<A4092|A4770|A4092_Buster9|A4770_Buster9>"
 
 # ---- Per-variant build (VARIANT is set) ----
 else
 
 WORKDIR=tmp-$(VARIANT)
+BASE_VARIANT=$(patsubst %_Buster9,%,$(VARIANT))
 DEFINES=
 
-ifeq ($(VARIANT),A4092c)
+ifneq ($(VARIANT),$(BASE_VARIANT))
+  DEFINES += BUSTER09
+endif
+
+ifeq ($(BASE_VARIANT),A4092)
   DEFINES += A4092c
-else ifeq ($(VARIANT),A4770)
+else ifeq ($(BASE_VARIANT),A4770)
   DEFINES += A4770
-else
-  # A4092: respect USE_DIP_SWITCH option
-  # default is DIP switch, not FLASH
-  #USE_DIP_SWITCH ?= 1
-  # default is FLASH
-  USE_DIP_SWITCH ?= 0
-  ifeq ($(USE_DIP_SWITCH),1)
-    DEFINES += USE_DIP_SWITCH
-  endif
 endif
 
 .PHONY:	all timing

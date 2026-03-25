@@ -98,4 +98,6 @@ make flash           # Program the CPLD via JTAG
 make clean           # Remove build artifacts
 ```
 
-The Makefile supports `USE_DIP_SWITCH=1` to build with hardware DIP switch support.
+The Makefile exposes four build targets: `A4092`, `A4770`, `A4092_Buster9`, and
+`A4770_Buster9`. The `A4092` target maps to the SPI-ROM, no-DIP-switch
+configuration formerly named `A4092c`.
