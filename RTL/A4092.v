@@ -91,6 +91,7 @@ module A4092 (
     input CBREQ_n,          // Cache Burst Request, not used
     inout CBACK_n,          // Cache Burst Acknowledge
     input SC0,              // SCSI snoop control
+    output RAMCS_n,         // Chipselect for 53C770 internal RAM
 
     // ROM Interface
     output ROM_OE_n,
@@ -116,8 +117,8 @@ module A4092 (
     localparam prod_id = 8'd84;         // A 4091 SCSI
 `endif
     localparam PLD_VER_MAJ = 8'd1;      // CPLD Version
-    localparam PLD_VER_MIN = 8'd3;      // CPLD Revision
-    localparam PLD_VER_PATCH = 16'd25;  // CPLD Patch Level
+    localparam PLD_VER_MIN = 8'd4;      // CPLD Revision
+    localparam PLD_VER_PATCH = 16'd3;   // CPLD Patch Level
     localparam romvec = 16'd512;        // Romvector for Autoboot ROM 0 = Autoboot disabled
 
     wire slave_sig;
@@ -334,6 +335,7 @@ module A4092 (
 	);
 
 	dmamaster DMA_MASTER (
+        .sclk (CLK_50M),
         .bclk (CLK),
         .IORST_n (IORST_n),
         .SLAVE_n (SLAVE_n),
@@ -377,7 +379,8 @@ module A4092 (
 	);
 `else
 	parallelrom PARALLEL_ROM (
-        .CLK (CLK),
+        .clk (CLK_50M),
+        .IORST_n (IORST_n),
         .romcycle (rom_cycle),
         .DOE (DOE),
         .DS_n (DS_n),
@@ -397,6 +400,7 @@ module A4092 (
         .scsi_cycle (scsi_cycle),
         .mybus (mybus),
         .SCSI_SREG_n (SCSI_SREG_n),
+        .RAMCS_n (RAMCS_n),
         .scsi_as_sig (scsi_as_sig),
         .scsi_ds_sig (scsi_ds_sig),		
         .SLACK_n (SLACK_n),

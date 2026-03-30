@@ -22,6 +22,11 @@ module dmaarbiter (
     output reg fakeint = 0
 );
 
+    // ###########################################################
+    // ZIII Spec state min. three 7MHz Clock between BR pulse, A4091 use two, one wont work stable!
+    localparam recyclecnt = 3;
+    // ###########################################################
+
     wire false_br;
     wire valid_br;
     reg rchng = 0;              // change of registration necessary (sync to 25MHz)
@@ -30,6 +35,7 @@ module dmaarbiter (
     reg reged25 = 0;            // reged sync to 25MHz
     reg ebr25_n = 1;            // EBR_n sync to 25MHz
     reg quickint_cycle25 = 0;   // quickint cycle sync to 25MHz
+    reg [1:0] reregcnt = 0;     // Counter for recycle EBR_n
 
     // Workaround for System Engineering Notes No. 840
     // SYM53C710, SYM53C720 False Bus Request
@@ -50,10 +56,20 @@ module dmaarbiter (
         if (!IORST_n) begin
             SBG_n = 1;
         end else begin
-            SBG_n = 1;
             if (false_br || (valid_br && MASTER_n && !EBG_n && reged && !rchng7)) begin
                 SBG_n = 0;
+            end else begin
+                SBG_n = 1;
             end
+        end
+    end
+
+    // Sync Signals to 7MHz
+    always @(negedge IORST_n, negedge clk7m) begin
+        if (!IORST_n) begin
+            rchng7 <= 0;
+        end else begin
+            rchng7 <= rchng;
         end
     end
 
@@ -64,14 +80,30 @@ module dmaarbiter (
         if (!IORST_n) begin
             ebr_delay_n <= 1;
             reged <= 0;
-            rchng7 <= 0;
+            reregcnt <= 0;
         end else begin
-            rchng7 <= rchng;
             ebr_delay_n <= 1;
-            if (rchng7 && ebr_delay_n) begin
+
+            if (reregcnt > 0 ) begin
+                reregcnt <= reregcnt -1;
+            end else if (rchng7 && ebr_delay_n) begin
                 ebr_delay_n <= 0;
+                reregcnt <= recyclecnt;
                 reged <= !reged;
             end
+        end
+    end
+
+    // Sync Signals to 25MHz
+    always @(negedge IORST_n, negedge clk) begin
+        if (!IORST_n) begin
+            reged25 <= 0;
+            quickint_cycle25 <= 0;
+            ebr25_n <= 0;
+        end else begin
+            reged25 <= reged;
+            quickint_cycle25 <= quickint_cycle; // quickint_cycle ist async -> sync to 25MHz
+            ebr25_n <= ebr_delay_n;             // ebr_delay_n ist async -> sync to 25MHz
         end
     end
 
@@ -85,24 +117,21 @@ module dmaarbiter (
     always @(negedge IORST_n, posedge clk) begin
         if (!IORST_n) begin
             rchng <= 0;
-            reged25 <= 0;
-            ebr25_n <= 0;
             fakeint <= 0;
-            quickint_cycle25 <= 0;
         end else begin
-            reged25 <= reged;
-            fakeint <= 0;
-            quickint_cycle25 <= quickint_cycle; // quickint_cycle ist async -> sync to 25MHz
-            ebr25_n <= ebr_delay_n;             // ebr_delay_n ist async -> sync to 25MHz
             if (!ebr25_n) begin
+                fakeint <= 0;
                 rchng <= 0;
             end else if (!reged25 && (valid_br || SC0)) begin
                 if (!buster09 || (quickint_cycle25 && fakeint)) begin
+                    fakeint <= 0;
                     rchng <= 1;
                 end else begin
                     fakeint <= 1;
+                    rchng <= 0;
                 end
             end else if (reged25 && MASTER_n && !valid_br && !SC0) begin
+                fakeint <= 0;
                 rchng <= 1;
             end
         end

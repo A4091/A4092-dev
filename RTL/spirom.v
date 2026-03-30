@@ -64,7 +64,7 @@ module spirom(
     assign SPI_PORT_READ_HOLD = (READ && ({addr[7:2],2'b00} == 8'he0)) ? 1 : 0;   // $7fffe0
     assign SPI_PORT_READ_END = (READ && ({addr[7:2],2'b00} == 8'hf0)) ? 1 : 0;    // $7ffff0
 
-    always @ (negedge IORST_n, posedge clk) begin
+    always @ (negedge IORST_n, negedge clk) begin
         if (!IORST_n) begin
             romcycle_sync <= 0;
             doe_sync <= 0;

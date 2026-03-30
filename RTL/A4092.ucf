@@ -57,14 +57,15 @@ NET "A4770SCSI_DS_n"   LOC = "P45";
 NET "MTCR_n"      LOC = "P48";
 NET "SID_n"       LOC = "P49";
 NET "DIP_EXT_TERM" LOC = "P50";
-# P51 - NC
+NET "DIP_EXT_TERM" SLEW = "SLOW";
+NET "RAMCS_n"     LOC = "P51";
 # P52 - NC
 # P53 - NC
 # P54 - NC
 # P55 - VCCIO
 # P56 - NC
-# P57 - NC
-# P58 - NC
+NET "A<21>"       LOC = "P57";
+NET "A<22>"       LOC = "P58";
 NET "A<23>"       LOC = "P59";
 NET "A<24>"       LOC = "P60";
 NET "A<25>"       LOC = "P61";
@@ -127,6 +128,7 @@ NET "Z_LOCK"      LOC = "P113";
 NET "DTACK_n"     LOC = "P115";
 NET "DTACK_n"     SLEW = "SLOW";
 NET "MTACK_n"     LOC = "P116";
+NET "MTACK_n"     SLEW = "SLOW";
 NET "CINH_n"      LOC = "P117";
 NET "CINH_n"      SLEW = "SLOW";
 NET "SENSEZ3"     LOC = "P118";

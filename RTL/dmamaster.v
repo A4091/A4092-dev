@@ -48,7 +48,7 @@ module dmamaster(
     assign dma_aboel = mybus;
 
     // Start cycle if bus if free, and SCSI_AS_n active
-    always @ (negedge cycz3, posedge sclk) begin
+    always @ (negedge cycz3, posedge bclk) begin
         if (!cycz3) begin
             dma_aboeh <= 0;
         end else begin
