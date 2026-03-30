@@ -2,8 +2,8 @@ PROJECT=A4092
 PART=XC95144XL-10-TQ144
 CABLE=usb21
 
-#CPLDFITFLAGS=-loc on -slew slow -init low -terminate keeper  -unused ground -power std  -optimize speed -keepio
-CPLDFITFLAGS=-loc on -slew fast -init low -terminate keeper  -unused float -power std  -optimize speed -keepio -exhaust -pterms 90
+#CPLDFITFLAGS=-loc on -slew slow -init low -terminate keeper  -unused ground -power std  -optimize speed
+CPLDFITFLAGS=-loc on -slew fast -init low -terminate keeper  -unused float -power std  -optimize speed -exhaust -pterms 18
 
 # Variants: A4092 (SPI ROM, no DIP switch), A4770
 BASE_VARIANTS = A4092 A4770
