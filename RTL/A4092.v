@@ -113,11 +113,11 @@ module A4092 (
     );
 
 `ifdef A4770
-    localparam mfg_id = 16'd514;        // Commodore (West Chester)
-    localparam prod_id = 8'd84;         // A 4091 SCSI
+    localparam mfg_id = 16'hc0de;      // SCSI.ME
+    localparam prod_id = 8'd2;         // A4770 SCSI
 `else   // A4092
-    localparam mfg_id = 16'd514;        // Commodore (West Chester)
-    localparam prod_id = 8'd84;         // A 4091 SCSI
+    localparam mfg_id = 16'hc0de;      // SCSI.ME
+    localparam prod_id = 8'd1;         // A4092 SCSI
 `endif
     localparam PLD_VER_MAJ = 8'd1;      // CPLD Version
     localparam PLD_VER_MIN = 8'd4;      // CPLD Revision
