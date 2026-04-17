@@ -20,13 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 // ###########################################################
-`undef A4770                // define for A4770 cheeta board
-`undef A4092c               // define for A4092c board without Parallelrom and DIP Switch
+// Variant selection is normally injected by the build as Verilog macros.
+// Leave these undefined here so external defines are not overridden.
 // A4092a need manual selection:
-`define USE_SPIROM          // undef for Parallel ROM define for SPI ROM
-`undef USE_DIP_SWITCH       // undef to use Virtual Register, define to use Hardware Switch
+// `define USE_SPIROM          // undef for Parallel ROM define for SPI ROM
+// `undef USE_DIP_SWITCH       // undef to use Virtual Register, define to use Hardware Switch
 // ###########################################################
-`undef BUSTER09             // define for Buste09 Compatibility (HIGHLY EXPERIMENTAL!)
+// `define BUSTER09          // define for Buste09 Compatibility (HIGHLY EXPERIMENTAL!)
 // ###########################################################
 
 `ifdef A4770
@@ -35,6 +35,9 @@
 `elsif A4092c
     `define USE_SPIROM
     `undef  USE_DIP_SWITCH
+`elsif A4092
+    `define USE_SPIROM
+    `undef USE_DIP_SWITCH
 `endif
 
 module A4092 (
