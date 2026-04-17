@@ -24,6 +24,7 @@ module dmamaster(
     input IORST_n,
     input SLAVE_n,
     input mybus,
+    input MASTER_n,
     input SCSI_AS_n,
     output reg SCSI_STERM_n = 1,
     input READ,
@@ -48,12 +49,14 @@ module dmamaster(
     assign dma_aboel = mybus;
 
     // Start cycle if bus if free, and SCSI_AS_n active
-    always @ (negedge cycz3, posedge bclk) begin
+    always @ (negedge cycz3, negedge sclk) begin
         if (!cycz3) begin
             dma_aboeh <= 0;
         end else begin
             if (busfree) begin
-                dma_aboeh <= 1;
+                if (bclk) begin
+                    dma_aboeh <= 1;
+                end
             end else begin
                 dma_aboeh <= 0;
             end
@@ -61,7 +64,7 @@ module dmamaster(
     end
 
     // set efcs active 1 sclk after ABOEH (20ns) (Tafs >= 15ns)
-    always @ (negedge cycz3, posedge sclk) begin
+    always @ (negedge cycz3, negedge sclk) begin
         if (!cycz3) begin
             efcs <= 0;
         end else begin
@@ -72,18 +75,20 @@ module dmamaster(
     end
 
     // set doe active 1/2 sclk after dma_aboeh inactive (10ns)
-    always @ (negedge cycz3, negedge sclk) begin
+    always @ (negedge cycz3, posedge sclk) begin
         if (!cycz3) begin
             dma_doe <= 0;
         end else begin
-            if (!dma_aboeh) begin
+            if (efcs && !dma_aboeh) begin
                 dma_doe <= 1;
+            end else begin
+                dma_doe <= 0;
             end
         end
     end
 
     // set ds active 1/2 sclk after doe (10ns) (tds 10...30ns)
-    always @ (negedge cycz3, posedge sclk) begin
+    always @ (negedge cycz3, negedge sclk) begin
         if (!cycz3) begin
             ds_n <= 4'b1111;
         end else begin
@@ -93,6 +98,8 @@ module dmamaster(
                 ds_n[1] <= !(READ || (!ADDRL[1] && SIZ == 2'b00) || (!ADDRL[1] && SIZ == 2'b11) || (ADDRL == 2'b01 && !SIZ[0]) || ADDRL == 2'b10);
                 ds_n[2] <= !(READ || (!ADDRL[1] && !SIZ[0]) || ADDRL == 2'b01 || (!ADDRL[1] && SIZ[1]));
                 ds_n[3] <= !(READ || ADDRL == 2'b00);
+            end else begin
+                ds_n <= 4'b1111;
             end
         end
     end
@@ -105,7 +112,7 @@ module dmamaster(
         if (!IORST_n) begin
             SCSI_STERM_n <= 1;
         end else begin
-            if (!SCSI_AS_n && !Z_FCS_n && !DTACK_n) begin
+            if (MASTER_n != mybus && !SCSI_AS_n && !Z_FCS_n && !DTACK_n) begin
                 SCSI_STERM_n <= 0;
             end else begin
                 SCSI_STERM_n <= 1;

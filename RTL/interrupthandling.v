@@ -31,34 +31,28 @@ module interrupthandling(
     output reg vector_read = 0,
     output reg dtack = 0,
     input SINT_n,                   // real interrupt from NCR
-    input fakeint,                  // fake interrupt from dmaarbiter, needed for Buster09 compatibility
-    output int_sig,                 // interrupt out tu ZIII Bus
+    output reg int_sig = 0,         // interrupt out tu ZIII Bus
     input FCS_n,
     input SLAVE_n,
     input quickint_cycle,
     output reg slave = 0
 );
 
-    // interrupt signal ti ZIII Bus, can only change is FCS_n is inactive
-    reg int_sync = 0;
-
     reg vector_assigned = 0;
     wire real_quickint_cycle;
 
-    assign real_quickint_cycle = quickint_cycle && vector_assigned && int_sync && !SINT_n;
+    assign real_quickint_cycle = quickint_cycle && vector_assigned && int_sig;
 
     assign poll_phase = real_quickint_cycle && !DOE && DS0_n;
     assign vector_phase = real_quickint_cycle && DOE && !DS0_n && !SLAVE_n;
 
-    // With assigned Vector Interrupt use synced int, else simply pass through NCR Interrupt
-    assign int_sig = (vector_assigned) ? int_sync : !SINT_n;
 
-    // Sync interrupt process line to Zorro III cycles.
+    // interrupt signal to ZIII Bus, can only change if FCS_n is inactive
     always @(*) begin
         if (!IORST_n) begin
-            int_sync = 0;
+            int_sig = 0;
         end else if (FCS_n) begin
-            int_sync = !SINT_n || fakeint;
+            int_sig = !SINT_n;
         end
     end
 

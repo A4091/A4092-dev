@@ -118,7 +118,7 @@ module A4092 (
 `endif
     localparam PLD_VER_MAJ = 8'd1;      // CPLD Version
     localparam PLD_VER_MIN = 8'd4;      // CPLD Revision
-    localparam PLD_VER_PATCH = 16'd3;   // CPLD Patch Level
+    localparam PLD_VER_PATCH = 16'd21;  // CPLD Patch Level
     localparam romvec = 16'd512;        // Romvector for Autoboot ROM 0 = Autoboot disabled
 
     wire slave_sig;
@@ -192,7 +192,7 @@ module A4092 (
     assign DTACK_n = (dtack_sig && !Z_FCS_n) ? 0 : 1'bZ;
     assign CINH_n = slave_sig ? 0 : 1'bZ;
     assign MTACK_n = slave_sig ? 1 : 1'bZ;
-    assign INT2_n = int_sig ? 0 : 1'bZ;
+    assign INT2_n = (int_sig || fakeint) ? 0 : 1'bZ;
     assign Z_FCS_n = mybus ? !efcs : 1'bZ;
 
     // ########################################
@@ -340,6 +340,7 @@ module A4092 (
         .IORST_n (IORST_n),
         .SLAVE_n (SLAVE_n),
         .mybus (mybus),
+        .MASTER_n (MASTER_n),
         .SCSI_AS_n (SCSI_AS_n),
         .SCSI_STERM_n (SCSI_STERM_n),
         .READ (READ),
@@ -420,7 +421,6 @@ module A4092 (
         .vector_read (intvector_read),
         .dtack (int_dtack),
         .SINT_n (SINT_n),
-        .fakeint (fakeint),
         .int_sig (int_sig),
         .FCS_n (Z_FCS_n),
         .SLAVE_n (SLAVE_n),
