@@ -24,7 +24,7 @@ if {[catch {project open $project_file} err]} {
     fail $err
 }
 
-if {[catch {project set {Specify 'define Macro Name and Value} $defines} err]} {
+if {[catch {project set "Verilog Macros" $defines -process "Synthesize - XST"} err]} {
     fail $err
 }
 
