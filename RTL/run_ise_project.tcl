@@ -28,6 +28,13 @@ if {[catch {project set "Verilog Macros" $defines -process "Synthesize - XST"} e
     fail $err
 }
 
+# Keep all implementation sources in the generated .prj file. With
+# macro-controlled variants, ISE's compile-order filter can otherwise drop
+# optional modules such as spirom.v before XST sees the updated defines.
+if {[catch {project set "Filter Files From Compile Order" false} err]} {
+    fail $err
+}
+
 puts "Running '$task' with defines: $defines"
 
 if {[catch {process run $task -force rerun_all} result]} {
