@@ -32,7 +32,8 @@
 `ifdef A4770
     `define USE_SPIROM
     `undef  USE_DIP_SWITCH
-    `define USE_A4770_HACKS
+    `define A4092_STYLE_SPI
+    `undef  DISABLE_SC0
 `elsif A4092c
     `define USE_SPIROM
     `undef  USE_DIP_SWITCH
@@ -322,7 +323,7 @@ module A4092 (
         .IORST_n (IORST_n),
         .MASTER_n (MASTER_n),
         .SBR_n (SBR_n),
-`ifdef USE_A4770_HACKS
+`ifdef DISABLE_SC0
         .SC0 (1'b0),
 `else
         .SC0 (SC0),
@@ -369,7 +370,7 @@ module A4092 (
         .IORST_n (IORST_n),
         .romcycle (rom_cycle),
 `ifdef A4770
-`ifdef USE_A4770_HACKS
+`ifdef A4092_STYLE_SPI
         .addr ({&A[20:6], &A[20:6], A[20:2]}),
 `else
         .addr (A[22:2]),
